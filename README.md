@@ -1,4 +1,4 @@
-# 🌐 Plataforma de Comunidades – Conectando Desenvolvedores no Piauí
+# 🌐 DevsPiaui – Conectando Desenvolvedores no Piauí
 
 Bem-vindo à **Plataforma de Comunidades**, um projeto open source que conecta desenvolvedores, empresas, instituições e projetos relevantes no ecossistema de inovação do Piauí. Aqui, valorizamos o que é feito localmente e incentivamos a colaboração em rede para impulsionar o crescimento da comunidade.
 
