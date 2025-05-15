@@ -17,7 +17,7 @@ Criar um hub digital colaborativo para:
 ## 🧩 Módulos da Plataforma
 
 - **👥 Comunidades** – Criação e participação em grupos temáticos.
-- **🌟 Make In Piauí** – Destaque para projetos desenvolvidos por membros da comunidade.
+- **🌟 Made In Piauí** – Destaque para projetos desenvolvidos por membros da comunidade.
 - **🏢 Empresas e Instituições** – Perfis de organizações que atuam na área de tecnologia, educação e inovação.
 - **📅 Eventos** – Divulgação de eventos semanais, como ChoiceCasts e encontros da comunidade.
 
@@ -25,12 +25,7 @@ Criar um hub digital colaborativo para:
 
 ## 🛠 Tecnologias Utilizadas
 
-- [Framework ou linguagem principal]
-- [Banco de dados]
-- [Ferramentas de autenticação, se houver]
-- [Outras libs ou ferramentas]
-
-*(Adapte conforme as tecnologias que estão sendo usadas)*
+- React-TS + Firebase
 
 ---
 
