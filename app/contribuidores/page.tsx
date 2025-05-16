@@ -142,6 +142,13 @@ export default function ContribuidoresPage() {
           Este é um projeto de código aberto e estamos sempre procurando por pessoas que queiram contribuir. Se você tem
           interesse em ajudar, entre em contato conosco.
         </p>
+        <a
+          href="https://github.com/Germano123/devspi-platform"
+          className="mb-4 inline-flex items-center gap-2 text-primary hover:underline"
+        >
+          <ExternalLink size={16} />GitHub
+        </a>
+
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
             href="mailto:gdevsociety@gmail.com"
