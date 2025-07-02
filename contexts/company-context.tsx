@@ -1,3 +1,5 @@
+"use client"
+
 import { ICompanyService } from "@/interfaces/services/company.interface"
 import { FirebaseCompanyService } from "@/lib/services/company/company.service"
 import { createContext, ReactNode, useContext } from "react"
