@@ -1,7 +1,7 @@
 "use client"
 
 import { ICompanyService } from "@/interfaces/services/company.interface"
-import { FirebaseCompanyService } from "@/lib/services/company/company.service"
+import { Company, FirebaseCompanyService } from "@/lib/services/company/company.service"
 import { createContext, ReactNode, useContext } from "react"
 
 const CompanyContext = createContext<ICompanyService | null>(null)
@@ -18,7 +18,7 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         return service.getCompany(id)
     }
     
-    const getAllCompany = async (): Promise<null> => {
+    const getAllCompany = async (): Promise<Company[]> => {
         return service.getAllCompany()
     }
     
