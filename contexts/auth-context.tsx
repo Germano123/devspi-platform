@@ -219,9 +219,6 @@ export interface Project extends ProjectData {
   id: string
 }
 
-// Lista de emails de administradores
-const ADMIN_EMAILS = ["admin@devspi.com.br", "root@devspi.com.br"]
-
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
