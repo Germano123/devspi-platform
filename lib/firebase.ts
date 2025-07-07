@@ -5,20 +5,22 @@ import { FirebaseStorage, getStorage } from "firebase/storage"
 
 // Get configuration from environment variables or use defaults
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+ apiKey: "AIzaSyDOYDJRzpdbBkRSfbI55CBV7sMnNjV2_DQ",
+  authDomain: "devspi-dev.firebaseapp.com",
+  projectId: "devspi-dev",
+  storageBucket: "devspi-dev.firebasestorage.app",
+  messagingSenderId: "842738876511",
+  appId: "1:842738876511:web:56c8f21660cf8ce65b9bea",
 }
 
 // Log configuration status (without exposing sensitive values)
 console.info("Firebase config status:", {
-  apiKeyProvided: !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomainProvided: !!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectIdProvided: !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  usingDefaults: !process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  apiKey: "AIzaSyDOYDJRzpdbBkRSfbI55CBV7sMnNjV2_DQ",
+  authDomain: "devspi-dev.firebaseapp.com",
+  projectId: "devspi-dev",
+  storageBucket: "devspi-dev.firebasestorage.app",
+  messagingSenderId: "842738876511",
+  appId: "1:842738876511:web:56c8f21660cf8ce65b9bea",
 })
 
 // Initialize Firebase safely 
