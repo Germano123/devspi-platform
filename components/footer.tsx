@@ -70,7 +70,7 @@ export default function Footer() {
 
         <div className="border-t mt-8 pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Devs Piauí. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} Devs Piauí. Todos os direitos reservados Teste.
           </p>
         </div>
       </div>
