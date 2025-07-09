@@ -1,27 +1,20 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app"
-import { Auth, confirmPasswordReset, getAuth } from "firebase/auth"
+import { Auth, getAuth } from "firebase/auth"
 import { Firestore, getFirestore } from "firebase/firestore"
 import { FirebaseStorage, getStorage } from "firebase/storage"
 
 // Get configuration from environment variables or use defaults
 const firebaseConfig = {
- apiKey: "AIzaSyDOYDJRzpdbBkRSfbI55CBV7sMnNjV2_DQ",
-  authDomain: "devspi-dev.firebaseapp.com",
-  projectId: "devspi-dev",
-  storageBucket: "devspi-dev.firebasestorage.app",
-  messagingSenderId: "842738876511",
-  appId: "1:842738876511:web:56c8f21660cf8ce65b9bea",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measuermentId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
 
-// Log configuration status (without exposing sensitive values)
-console.info("Firebase config status:", {
-  apiKey: "AIzaSyDOYDJRzpdbBkRSfbI55CBV7sMnNjV2_DQ",
-  authDomain: "devspi-dev.firebaseapp.com",
-  projectId: "devspi-dev",
-  storageBucket: "devspi-dev.firebasestorage.app",
-  messagingSenderId: "842738876511",
-  appId: "1:842738876511:web:56c8f21660cf8ce65b9bea",
-})
+// console.info("Configuring Firebase...")
 
 // Initialize Firebase safely 
 let app: FirebaseApp | null, auth: Auth, db: Firestore, storage: FirebaseStorage
@@ -32,7 +25,7 @@ try {
   auth = getAuth(app)
   db = getFirestore(app)
   storage = getStorage(app)
-  // console.info("Firebase configured");
+  // console.info("Firebase configured!");
 } catch (error) {
   console.error("Firebase initialization error:", error)
 
