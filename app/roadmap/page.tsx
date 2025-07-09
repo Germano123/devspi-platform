@@ -22,6 +22,15 @@ const cards = [
       'Made In Piauí - Área de projetos',
     ],
   },
+  {
+    title: 'Jun/2025 - Revisão',
+    description: 'Correção de falhas e ajuste de atrasos',
+    topics: [
+      'Fórum de discussão',
+      'Empresas e instituições',
+      'Área de vagas e oportunidades',
+    ],
+  },
 ]
 
 export default function RoadmapPage() {

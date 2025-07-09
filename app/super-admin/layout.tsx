@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { BarChart3, Users, Globe, Calendar, FolderKanban, Users2, Shield, Menu, Home, LogOut } from "lucide-react"
+import { BarChart3, Users, Globe, Calendar, FolderKanban, Users2, Shield, Menu, Home, LogOut, BriefcaseBusiness } from "lucide-react"
 import { cn } from "@/lib/utils"
 import AdminRoute from "@/components/admin-route"
 
@@ -39,6 +39,11 @@ export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
       title: "Comunidades",
       href: "/super-admin/comunidades",
       icon: Globe,
+    },
+    {
+      title: "Empresas",
+      href: "/super-admin/empresas",
+      icon: BriefcaseBusiness,
     },
     {
       title: "Eventos",
