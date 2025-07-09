@@ -1,9 +1,16 @@
-import { Company } from "@/lib/services/company/company.service"
+export interface CompanyData {
+  name: string
+  website: string
+}
+
+export interface Company extends CompanyData {
+  id: string
+}
 
 export interface ICompanyService {
-    createCompany: () => Promise<null>
-    getCompany: (id: string) => Promise<null>
-    getAllCompany: () => Promise<Company[]>
-    updateCompany: (id: string, company: any) => Promise<null>
-    deleteCompany: (id: string) => Promise<null>
+  createCompany(company: CompanyData): Promise<Company>
+  getCompany(id: string): Promise<Company | null>
+  getAllCompany(): Promise<Company[]>
+  updateCompany(id: string, company: Partial<CompanyData>): Promise<void>
+  deleteCompany(id: string): Promise<void>
 }

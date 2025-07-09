@@ -1,45 +1,68 @@
 import { ICompanyService } from "@/interfaces/services/company.interface"
 import { db } from "@/lib/firebase"
-import { collection, getDocs } from "firebase/firestore"
+import {
+  collection,
+  getDocs,
+  getDoc,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore"
 
 interface CompanyData {
-    name: string,
-    website: string,
+  name: string
+  website: string
 }
 
-export interface Company extends CompanyData{
-    id: string,
+export interface Company extends CompanyData {
+  id: string
 }
 
 export class FirebaseCompanyService implements ICompanyService {
-    async createCompany(): Promise<null> {
-        return null
+  private collectionRef = collection(db, "companies")
+
+  async createCompany(company: CompanyData): Promise<Company> {
+    const docRef = await addDoc(this.collectionRef, company)
+    return {
+      id: docRef.id,
+      ...company,
     }
+  }
 
-    async getCompany(id: string): Promise<null> {
-        return null
+  async getCompany(id: string): Promise<Company | null> {
+    const docRef = doc(db, "companies", id)
+    const docSnap = await getDoc(docRef)
+
+    if (!docSnap.exists()) return null
+
+    return {
+      id: docSnap.id,
+      ...(docSnap.data() as CompanyData),
     }
+  }
 
-    async getAllCompany(): Promise<Company[]> {
-        const querySnapshot = await getDocs(collection(db, "companies"))
-        const communities: Company[] = []
+  async getAllCompany(): Promise<Company[]> {
+    const querySnapshot = await getDocs(this.collectionRef)
+    const companies: Company[] = []
 
-        querySnapshot.forEach((doc) => {
-            communities.push({
-                id: doc.id,
-                ...(doc.data() as CompanyData),
-            })
-        })
+    querySnapshot.forEach((doc) => {
+      companies.push({
+        id: doc.id,
+        ...(doc.data() as CompanyData),
+      })
+    })
 
-        // Ordenar por nome
-        return communities.sort((a, b) => a.name.localeCompare(b.name))
-    }
+    return companies.sort((a, b) => a.name.localeCompare(b.name))
+  }
 
-    async updateCompany(id: string, company: any): Promise<null> {
-        return null
-    }
+  async updateCompany(id: string, company: Partial<CompanyData>): Promise<void> {
+    const docRef = doc(db, "companies", id)
+    await updateDoc(docRef, company)
+  }
 
-    async deleteCompany(id: string): Promise<null> {
-        return null
-    }
+  async deleteCompany(id: string): Promise<void> {
+    const docRef = doc(db, "companies", id)
+    await deleteDoc(docRef)
+  }
 }
