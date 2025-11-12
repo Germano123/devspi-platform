@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { type User, onAuthStateChanged, UserCredential } from "firebase/auth";
-import { auth, db, storage } from "@/lib/firebase";
+import { type User, onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
 import {
   doc,
   setDoc,
@@ -22,12 +22,6 @@ import {
   where,
 } from "firebase/firestore";
 import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import {
   IAuthService,
   LoginCredentials,
   RegisterCredentials,
@@ -37,15 +31,7 @@ import { AuthService } from "@/lib/services/auth.service";
 interface AuthContextType extends IAuthService {
   user: User | null;
   loading: boolean;
-  isAdmin: boolean;
-
-  // Funções para usuários
-  createUserProfile: (userId: string, data: ProfileData) => Promise<void>;
-  getUserProfile: (userId: string) => Promise<ProfileData | null>;
-  updateUserProfile: (userId: string, data: ProfileData) => Promise<void>;
-  uploadProfilePhoto: (userId: string, file: File) => Promise<string>;
-  deleteProfilePhoto: (userId: string, photoURL: string) => Promise<void>;
-  getAllProfiles: () => Promise<(ProfileData & { id: string })[]>;
+  isAdmin: boolean;  
 
   // Funções para comunidades
   getAllCommunities: () => Promise<Community[]>;
@@ -98,28 +84,6 @@ interface AuthContextType extends IAuthService {
   updateProject: (id: string, data: Partial<ProjectData>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   getUserProjects: (userId: string) => Promise<Project[]>;
-}
-
-export interface ProfileData {
-  firstName: string;
-  lastName: string;
-  role: string;
-  linkedinUrl: string;
-  areaAtuacao: string[];
-  tempoExperiencia: string;
-  nivelEnsino: string;
-  photoURL?: string;
-  githubUrl?: string;
-  cookiePreferences?: {
-    essential: boolean;
-    performance: boolean;
-    analytics: boolean;
-    advertising: boolean;
-  };
-  privacySettings?: {
-    emailMarketing: boolean;
-    newsletter: boolean;
-  };
 }
 
 export interface CommunityData {
@@ -328,109 +292,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await authService.recoverPassword(email);
   };
 
-  const createUserProfile = async (userId: string, data: ProfileData) => {
-    await setDoc(doc(db, "profiles", userId), data);
-  };
-
-  const getUserProfile = async (
-    userId: string
-  ): Promise<ProfileData | null> => {
-    const docRef = doc(db, "profiles", userId);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const data = docSnap.data() as Omit<ProfileData, "areaAtuacao"> & {
-        areaAtuacao: string | string[];
-      };
-
-      // Garantir que areaAtuacao seja sempre um array
-      if (typeof data.areaAtuacao === "string") {
-        return {
-          ...data,
-          areaAtuacao: [data.areaAtuacao],
-        } as ProfileData;
-      }
-
-      return data as ProfileData;
-    } else {
-      return null;
-    }
-  };
-
-  const updateUserProfile = async (userId: string, data: ProfileData) => {
-    await setDoc(doc(db, "profiles", userId), data, { merge: true });
-  };
-
-  // Função para upload de foto de perfil
-  const uploadProfilePhoto = async (
-    userId: string,
-    file: File
-  ): Promise<string> => {
-    const fileExtension = file.name.split(".").pop();
-    const fileName = `profile_photos/${userId}_${Date.now()}.${fileExtension}`;
-    const storageRef = ref(storage, fileName);
-
-    await uploadBytes(storageRef, file);
-    const photoURL = await getDownloadURL(storageRef);
-
-    // Atualizar o perfil do usuário com a URL da foto
-    await updateUserProfile(userId, { photoURL } as ProfileData);
-
-    return photoURL;
-  };
-
-  // Função para excluir foto de perfil
-  const deleteProfilePhoto = async (
-    userId: string,
-    photoURL: string
-  ): Promise<void> => {
-    try {
-      // Extrair o caminho do arquivo da URL
-      const fileRef = ref(storage, photoURL);
-      await deleteObject(fileRef);
-
-      // Atualizar o perfil do usuário removendo a URL da foto
-      await updateUserProfile(userId, {
-        photoURL: null,
-      } as unknown as ProfileData);
-    } catch (error) {
-      console.error("Erro ao excluir foto:", error);
-      // Se não conseguir excluir o arquivo, pelo menos remove a referência no perfil
-      await updateUserProfile(userId, {
-        photoURL: null,
-      } as unknown as ProfileData);
-    }
-  };
-
-  const getAllProfiles = async (): Promise<
-    (ProfileData & { id: string })[]
-  > => {
-    const querySnapshot = await getDocs(collection(db, "profiles"));
-    const profiles: (ProfileData & { id: string })[] = [];
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data() as Omit<ProfileData, "areaAtuacao"> & {
-        areaAtuacao: string | string[];
-      };
-
-      // Garantir que areaAtuacao seja sempre um array
-      let areaAtuacao: string[];
-      if (typeof data.areaAtuacao === "string") {
-        areaAtuacao = [data.areaAtuacao];
-      } else {
-        areaAtuacao = data.areaAtuacao || [];
-      }
-
-      profiles.push({
-        id: doc.id,
-        ...data,
-        areaAtuacao,
-      } as ProfileData & { id: string });
-    });
-
-    return profiles;
-  };
-
   // Funções para gerenciar comunidades
   const getAllCommunities = async (): Promise<Community[]> => {
     const querySnapshot = await getDocs(collection(db, "communities"));
@@ -568,14 +429,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       >;
 
       // Buscar informações do perfil do usuário
-      const userProfile = await getUserProfile(memberData.userId);
+      // const userProfile = await getUserProfile(memberData.userId);
 
-      members.push({
-        ...memberData,
-        firstName: userProfile?.firstName,
-        lastName: userProfile?.lastName,
-        photoURL: userProfile?.photoURL,
-      });
+      // members.push({
+      //   ...memberData,
+      //   firstName: userProfile?.firstName,
+      //   lastName: userProfile?.lastName,
+      //   photoURL: userProfile?.photoURL,
+      // });
     }
 
     return members;
@@ -810,14 +671,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       >;
 
       // Buscar informações do perfil do usuário
-      const userProfile = await getUserProfile(interestedData.userId);
+      // const userProfile = await getUserProfile(interestedData.userId);
 
-      interested.push({
-        ...interestedData,
-        firstName: userProfile?.firstName,
-        lastName: userProfile?.lastName,
-        photoURL: userProfile?.photoURL,
-      });
+      // interested.push({
+      //   ...interestedData,
+      //   firstName: userProfile?.firstName,
+      //   lastName: userProfile?.lastName,
+      //   photoURL: userProfile?.photoURL,
+      // });
     }
 
     return interested;
@@ -838,14 +699,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       >;
 
       // Buscar informações do perfil do usuário
-      const userProfile = await getUserProfile(attendeeData.userId);
+      // const userProfile = await getUserProfile(attendeeData.userId);
 
-      attendees.push({
-        ...attendeeData,
-        firstName: userProfile?.firstName,
-        lastName: userProfile?.lastName,
-        photoURL: userProfile?.photoURL,
-      });
+      // attendees.push({
+      //   ...attendeeData,
+      //   firstName: userProfile?.firstName,
+      //   lastName: userProfile?.lastName,
+      //   photoURL: userProfile?.photoURL,
+      // });
     }
 
     return attendees;
@@ -928,17 +789,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       >;
 
       // Buscar informações do perfil do usuário
-      const userProfile = await getUserProfile(contributorData.userId);
+      // const userProfile = await getUserProfile(contributorData.userId);
 
-      contributors.push({
-        id: contributorDoc.id,
-        ...contributorData,
-        firstName: userProfile?.firstName,
-        lastName: userProfile?.lastName,
-        photoURL: userProfile?.photoURL,
-        githubUrl: userProfile?.githubUrl,
-        linkedinUrl: userProfile?.linkedinUrl,
-      });
+      // contributors.push({
+      //   id: contributorDoc.id,
+      //   ...contributorData,
+      //   firstName: userProfile?.firstName,
+      //   lastName: userProfile?.lastName,
+      //   photoURL: userProfile?.photoURL,
+      //   githubUrl: userProfile?.githubUrl,
+      //   linkedinUrl: userProfile?.linkedinUrl,
+      // });
     }
 
     return contributors;
@@ -973,10 +834,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Buscar nome do autor se não estiver incluído
       let authorName = projectData.authorName;
       if (!authorName && projectData.authorId) {
-        const userProfile = await getUserProfile(projectData.authorId);
-        authorName = userProfile
-          ? `${userProfile.firstName} ${userProfile.lastName}`
-          : "Usuário desconhecido";
+        // const userProfile = await getUserProfile(projectData.authorId);
+        // authorName = userProfile
+        //   ? `${userProfile.firstName} ${userProfile.lastName}`
+        //   : "Usuário desconhecido";
       }
 
       projects.push({
@@ -1000,10 +861,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Buscar nome do autor se não estiver incluído
       let authorName = projectData.authorName;
       if (!authorName && projectData.authorId) {
-        const userProfile = await getUserProfile(projectData.authorId);
-        authorName = userProfile
-          ? `${userProfile.firstName} ${userProfile.lastName}`
-          : "Usuário desconhecido";
+        // const userProfile = await getUserProfile(projectData.authorId);
+        // authorName = userProfile
+        //   ? `${userProfile.firstName} ${userProfile.lastName}`
+        //   : "Usuário desconhecido";
       }
 
       return {
@@ -1026,10 +887,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Adicionar nome do autor se não estiver incluído
     if (!projectData.authorName && projectData.authorId) {
-      const userProfile = await getUserProfile(projectData.authorId);
-      if (userProfile) {
-        projectData.authorName = `${userProfile.firstName} ${userProfile.lastName}`;
-      }
+      // const userProfile = await getUserProfile(projectData.authorId);
+      // if (userProfile) {
+      //   projectData.authorName = `${userProfile.firstName} ${userProfile.lastName}`;
+      // }
     }
 
     const docRef = await addDoc(collection(db, "projects"), projectData);
@@ -1085,13 +946,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         verifyEmail,
         recoverPassword,
-        // profile functions
-        createUserProfile,
-        getUserProfile,
-        updateUserProfile,
-        uploadProfilePhoto,
-        deleteProfilePhoto,
-        getAllProfiles,
         // community functions
         getAllCommunities,
         getAdminCommunities,

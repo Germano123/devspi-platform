@@ -60,7 +60,7 @@ export default function RegisterPage() {
       });
 
       // Redirecionar para a página de perfil para completar o cadastro
-      router.push("/profile");
+      router.push("/perfil");
     } catch (error: any) {
       console.error("Erro no registro:", error);
 

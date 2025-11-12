@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { CompanyProvider } from "@/contexts/company-context";
+import { ProfileProvider } from "@/contexts/profile.context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -70,13 +71,15 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
-            <CompanyProvider>
-              <div className="flex flex-col min-h-screen">
-                <Navbar />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
-            </CompanyProvider>
+            <ProfileProvider>
+              <CompanyProvider>
+                <div className="flex flex-col min-h-screen">
+                  <Navbar />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+              </CompanyProvider>
+            </ProfileProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

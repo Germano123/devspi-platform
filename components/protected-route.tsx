@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     }
 
     if (!loading && user && (pathname === "/login" || pathname === "/register")) {
-      router.push("/profile")
+      router.push("/perfil")
     }
   }, [user, loading, router, pathname])
 

@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, FormEvent } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth, type ProfileData } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,15 +29,15 @@ import { Download, Shield } from "lucide-react"
 import { jsPDF } from "jspdf"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
+import { useProfile } from "@/contexts/profile.context"
+import { Profile } from "@/lib/interfaces/profile.interface"
 
 export default function ProfilePage() {
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [githubUrl, setGithubUrl] = useState("")
-  const [linkedinUrl, setLinkedinUrl] = useState("")
-  const [portfolioUrl, setPortfolioUrl] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+
+  const [formData, setFormData] = useState<Partial<Profile>>({});
+
   const [photoURL, setPhotoURL] = useState<string | undefined>("")
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
 
@@ -63,13 +63,14 @@ export default function ProfilePage() {
   })
 
   // Loading states for actions
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false) // Fixed: Initialize with false instead of self-reference
-  const [isAdmin, setIsAdmin] = useState('user')
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const { user, logout, getUserProfile, updateUserProfile, uploadProfilePhoto, deleteProfilePhoto } = useAuth()
+  const { user, logout } = useAuth()
+  const { userProfile, getProfile, updateProfile, uploadProfilePhoto, deleteProfilePhoto } = useProfile();
   const router = useRouter()
 
   const combineExperienceValues = (): string => {
@@ -93,18 +94,16 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
-        setIsLoading(true)
+        setIsLoading(true);
+
         try {
-          const profile = await getUserProfile(user.uid)
+          const profile = await getProfile(user.uid)
           if (profile) {
-            setFirstName(profile.firstName || "")
-            setLastName(profile.lastName || "")
-            setGithubUrl(profile.githubUrl || "")
-            setLinkedinUrl(profile.linkedinUrl || "")
-            setPortfolioUrl(profile.portfolioUrl || "")
+            setFormData(profile);
+
             setSelectedAreas(profile.areaAtuacao || [])
             setNivelEnsino(profile.nivelEnsino || "")
-            setIsAdmin(profile.role)
+            setIsAdmin(profile.isAdmin)
 
             // Parse do tempo de experiência
             if (profile.tempoExperiencia) {
@@ -138,7 +137,12 @@ export default function ProfilePage() {
     }
 
     fetchProfile()
-  }, [user, getUserProfile])
+  }, [user, getProfile])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   // Função para alternar a seleção de uma área
   const toggleArea = (areaId: string) => {
@@ -152,82 +156,74 @@ export default function ProfilePage() {
   }
 
   // Atualizar o handleSubmit para incluir os novos campos
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!user) return
 
-    setIsLoading(true)
-    setIsSaved(false)
+    setIsLoading(true);
+    setIsSaved(false);
 
     try {
-      const profileData: ProfileData = {
-        firstName,
-        lastName,
-        githubUrl,
-        linkedinUrl,
-        portfolioUrl,
+      const formData = new FormData(e.currentTarget);
+
+      const profileUpdate: Partial<Profile> = {
+        firstName: formData.get("firstName") as string,
+        lastName: formData.get("lastName") as string,
+        githubUrl: formData.get("githubUrl") as string,
+        linkedinUrl: formData.get("linkedinUrl") as string,
+        portfolioUrl: formData.get("portfolioUrl") as string,
+        nivelEnsino: formData.get("nivelEnsino") as string,
         areaAtuacao: selectedAreas,
         tempoExperiencia: combineExperienceValues(),
-        nivelEnsino,
         cookiePreferences,
         privacySettings,
       }
 
-      await updateUserProfile(user.uid, profileData)
-      setIsSaved(true)
+      await updateProfile(user.uid, profileUpdate);
+      setIsSaved(true);
 
-      // Reset saved message after 3 seconds
-      setTimeout(() => setIsSaved(false), 3000)
+      setTimeout(() => setIsSaved(false), 1000);
     } catch (error) {
       console.error("Erro ao atualizar perfil:", error)
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
-  const handleLogout = async () => {
-    try {
-      await logout()
-      router.push("/login")
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error)
-    }
-  }
+  // const handlePhotoClick = () => {
+  //   fileInputRef.current?.click()
+  // }
 
-  const handlePhotoClick = () => {
-    fileInputRef.current?.click()
-  }
+  // const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (!user || !e.target.files || e.target.files.length === 0) return
 
-  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!user || !e.target.files || e.target.files.length === 0) return
+  //   const file = e.target.files[0]
+  //   setIsUploadingPhoto(true)
 
-    const file = e.target.files[0]
-    setIsUploadingPhoto(true)
+  //   try {
+  //     const url = await uploadProfilePhoto(user.uid, file);
+  //     if (url) setPhotoURL(url);
+  //   } catch (error) {
+  //     console.error("Erro ao fazer upload da foto:", error)
+  //   } finally {
+  //     setIsUploadingPhoto(false)
+  //   }
+  // }
 
-    try {
-      const url = await uploadProfilePhoto(user.uid, file)
-      setPhotoURL(url)
-    } catch (error) {
-      console.error("Erro ao fazer upload da foto:", error)
-    } finally {
-      setIsUploadingPhoto(false)
-    }
-  }
+  // const handleRemovePhoto = async () => {
+  //   if (!user || !photoURL) return
 
-  const handleRemovePhoto = async () => {
-    if (!user || !photoURL) return
+  //   setIsUploadingPhoto(true)
 
-    setIsUploadingPhoto(true)
-
-    try {
-      await deleteProfilePhoto(user.uid, photoURL)
-      setPhotoURL(undefined)
-    } catch (error) {
-      console.error("Erro ao remover foto:", error)
-    } finally {
-      setIsUploadingPhoto(false)
-    }
-  }
+  //   try {
+  //     await deleteProfilePhoto(user.uid, photoURL)
+  //     setPhotoURL(undefined)
+  //   } catch (error) {
+  //     console.error("Erro ao remover foto:", error)
+  //   } finally {
+  //     setIsUploadingPhoto(false)
+  //   }
+  // }
 
   // Handle cookie preference changes
   const handleCookiePreferenceChange = (type: keyof typeof cookiePreferences, checked: boolean) => {
@@ -264,7 +260,7 @@ export default function ProfilePage() {
 
   // Generate and download PDF with user data
   const handleDownloadPersonalData = async () => {
-    if (!user) return
+    if (!user || !userProfile) return
 
     setIsGeneratingPdf(true)
     try {
@@ -276,11 +272,11 @@ export default function ProfilePage() {
 
       // Add user info
       doc.setFontSize(12)
-      doc.text(`Nome: ${firstName} ${lastName}`, 20, 40)
+      doc.text(`Nome: ${userProfile.firstName} ${userProfile.lastName}`, 20, 40)
       doc.text(`Email: ${user.email || "Não informado"}`, 20, 50)
-      doc.text(`Github: ${githubUrl || "Não informado"}`, 20, 60)
-      doc.text(`LinkedIn: ${linkedinUrl || "Não informado"}`, 20, 60)
-      doc.text(`Portfólio: ${portfolioUrl || "Não informado"}`, 20, 60)
+      doc.text(`Github: ${userProfile.githubUrl || "Não informado"}`, 20, 60)
+      doc.text(`LinkedIn: ${userProfile.linkedinUrl || "Não informado"}`, 20, 60)
+      doc.text(`Portfólio: ${userProfile.portfolioUrl || "Não informado"}`, 20, 60)
       doc.text(`Tempo de Experiência: ${combineExperienceValues() || "Não informado"}`, 20, 70)
       doc.text(`Nível de Ensino: ${nivelEnsino || "Não informado"}`, 20, 80)
 
@@ -324,7 +320,7 @@ export default function ProfilePage() {
       doc.text(`Dados gerados em ${new Date().toLocaleDateString()} às ${new Date().toLocaleTimeString()}`, 20, 280)
 
       // Save the PDF
-      doc.save(`dados-pessoais-${firstName.toLowerCase()}-${lastName.toLowerCase()}.pdf`)
+      doc.save(`dados-pessoais-${userProfile.firstName.toLowerCase()}-${userProfile.lastName.toLowerCase()}.pdf`)
     } catch (error) {
       console.error("Erro ao gerar PDF:", error)
     } finally {
@@ -338,7 +334,7 @@ export default function ProfilePage() {
 
     setIsLoading(true)
     try {
-      await updateUserProfile(user.uid, {
+      await updateProfile(user.uid, {
         cookiePreferences,
         privacySettings,
       } as any)
@@ -384,29 +380,32 @@ export default function ProfilePage() {
                     <Label htmlFor="firstName">Nome</Label>
                     <Input
                       id="firstName"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      name="firstName"
+                      value={formData.firstName || ""}
                       placeholder="Seu nome"
+                      onChange={handleChange}
                       required
-                    />
+                      />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Sobrenome</Label>
                     <Input
                       id="lastName"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Seu sobrenome"
+                      name="lastName"
+                      value={formData.lastName || ""}
+                      placeholder={userProfile?.lastName || "Seu sobrenome"}
+                      onChange={handleChange}
                       required
-                    />
+                      />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="linkedinUrl">URL do LinkedIn</Label>
                     <Input
                       id="linkedinUrl"
-                      value={linkedinUrl}
-                      onChange={(e) => setLinkedinUrl(e.target.value)}
-                      placeholder="https://linkedin.com/in/seu-perfil"
+                      name="linkedinUrl"
+                      value={formData.linkedinUrl || "https://www.linkedin.com/in"}
+                      placeholder={userProfile?.linkedinUrl || "https://linkedin.com/in/seu-perfil"}
+                      onChange={handleChange}
                       type="url"
                     />
                   </div>
@@ -415,9 +414,10 @@ export default function ProfilePage() {
                     <Label htmlFor="githubUrl">URL do Github</Label>
                     <Input
                       id="githubUrl"
-                      value={githubUrl}
-                      onChange={(e) => setGithubUrl(e.target.value)}
-                      placeholder="https://github.com/seu-perfil"
+                      name="githubUrl"
+                      value={formData.githubUrl || "https://github.com/"}
+                      placeholder={userProfile?.githubUrl || "https://github.com/seu-perfil"}
+                      onChange={handleChange}
                       type="url"
                     />
                   </div>
@@ -425,9 +425,10 @@ export default function ProfilePage() {
                     <Label htmlFor="portfolioUrl">Portfólio</Label>
                     <Input
                       id="portfolioUrl"
-                      value={portfolioUrl}
-                      onChange={(e) => setPortfolioUrl(e.target.value)}
-                      placeholder="https://portfolio.com/seu-portfolio"
+                      name="portfolioUrl"
+                      value={formData.portfolioUrl || ""}
+                      placeholder={userProfile?.portfolioUrl || "https://portfolio.com/seu-portfolio"}
+                      onChange={handleChange}
                       type="url"
                     />
                   </div>

@@ -34,7 +34,7 @@ export default function LoginPage() {
 
     try {
       await signIn({ email, password });
-      router.push("/profile");
+      router.push("/perfil");
     } catch (error) {
       setError("Falha no login. Verifique seu email e senha.");
       console.error(error);
