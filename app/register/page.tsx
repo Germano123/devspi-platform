@@ -1,75 +1,83 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
-import ProtectedRoute from "@/components/protected-route"
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import ProtectedRoute from "@/components/protected-route";
+import { RegisterCredentials } from "@/lib/interfaces/auth.interface";
 
 export default function RegisterPage() {
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const { signUp, createUserProfile } = useAuth()
-  const router = useRouter()
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { signUp, signIn } = useAuth();
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
-
-    if (!firstName.trim() || !lastName.trim()) {
-      setError("Nome e sobrenome são obrigatórios.")
-      setIsLoading(false)
-      return
-    }
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
-      // Criar o usuário no Firebase Auth
-      const userCredential = await signUp(email, password)
+      const formData = new FormData(e.currentTarget);
 
-      // Criar o perfil do usuário no Firestore
-      if (userCredential.user) {
-        await createUserProfile(userCredential.user.uid, {
-          firstName,
-          lastName,
-          linkedinUrl: "",
-          areaAtuacao: [],
-          tempoExperiencia: "",
-          nivelEnsino: "",
-        })
+      const firstName = formData.get("firstName") as string;
+      const lastName = formData.get("lastName") as string;
+
+      if (!firstName.trim() || !lastName.trim()) {
+        setError("Nome e sobrenome são obrigatórios.");
+        setIsLoading(false);
+        return;
       }
 
+      const userCredentials: RegisterCredentials = {
+        firstName,
+        lastName,
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+      };
+
+      // Criar o usuário no Firebase Auth
+      await signUp(userCredentials);
+      await signIn({
+        email: userCredentials.email,
+        password: userCredentials.password,
+      });
+
       // Redirecionar para a página de perfil para completar o cadastro
-      router.push("/profile")
+      router.push("/profile");
     } catch (error: any) {
-      console.error("Erro no registro:", error)
+      console.error("Erro no registro:", error);
 
       // Mensagens de erro mais amigáveis baseadas no código de erro do Firebase
       if (error.code === "auth/email-already-in-use") {
-        setError("Este email já está sendo usado por outra conta.")
+        setError("Este email já está sendo usado por outra conta.");
       } else if (error.code === "auth/invalid-email") {
-        setError("O formato do email é inválido.")
+        setError("O formato do email é inválido.");
       } else if (error.code === "auth/weak-password") {
-        setError("A senha é muito fraca. Use pelo menos 6 caracteres.")
+        setError("A senha é muito fraca. Use pelo menos 6 caracteres.");
       } else {
-        setError("Falha no registro. Por favor, tente novamente.")
+        setError("Falha no registro. Por favor, tente novamente.");
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <ProtectedRoute>
@@ -77,30 +85,20 @@ export default function RegisterPage() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl">Criar Conta</CardTitle>
-            <CardDescription>Registre-se para acessar a plataforma</CardDescription>
+            <CardDescription>
+              Registre-se para acessar a plataforma
+            </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Nome</Label>
-                  <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Seu nome"
-                    required
-                  />
+                  <Input id="firstName" placeholder="Seu nome" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Sobrenome</Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Seu sobrenome"
-                    required
-                  />
+                  <Input id="lastName" placeholder="Seu sobrenome" required />
                 </div>
               </div>
               <div className="space-y-2">
@@ -108,8 +106,6 @@ export default function RegisterPage() {
                 <Input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu@email.com"
                   required
                 />
@@ -119,13 +115,13 @@ export default function RegisterPage() {
                 <Input
                   id="password"
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Crie uma senha segura"
                   minLength={6}
                   required
                 />
-                <p className="text-xs text-muted-foreground">A senha deve ter pelo menos 6 caracteres</p>
+                <p className="text-xs text-muted-foreground">
+                  A senha deve ter pelo menos 6 caracteres
+                </p>
               </div>
 
               {error && (
@@ -150,5 +146,5 @@ export default function RegisterPage() {
         </Card>
       </div>
     </ProtectedRoute>
-  )
+  );
 }
