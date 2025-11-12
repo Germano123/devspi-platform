@@ -43,13 +43,15 @@
     "cmdk": "1.0.4",
     "date-fns": "latest",
     "embla-carousel-react": "8.5.1",
+    "firebase": "latest",
     "input-otp": "1.4.1",
+    "jspdf": "latest",
     "lucide-react": "^0.454.0",
     "next": "15.2.4",
     "next-themes": "latest",
-    "react": "^19",
+    "react": "^18.3.1",
     "react-day-picker": "8.10.1",
-    "react-dom": "^19",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.1",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.0",
@@ -57,9 +59,7 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
-    "zod": "^3.24.1",
-    "firebase": "latest",
-    "jspdf": "latest"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22",
