@@ -157,9 +157,9 @@ export default function Navbar() {
                 </Link>
               )}
               <Link
-                href="/profile"
+                href="/perfil"
                 className={`text-sm ${
-                  pathname === "/profile"
+                  pathname === "/perfil"
                     ? "text-primary font-medium"
                     : "text-muted-foreground"
                 }`}
