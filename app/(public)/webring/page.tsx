@@ -24,6 +24,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { areasDeAtuacao } from "../../../constants/areas.enum";
+import { useProfile } from "@/contexts/profile.context";
 
 interface ProfileWithId {
   id: string;
@@ -59,7 +60,7 @@ export default function WebringPage() {
   const [showAreaFilters, setShowAreaFilters] = useState(false);
   const [totalFilteredCount, setTotalFilteredCount] = useState(0);
 
-  const { getAllProfiles } = useAuth();
+  const { getAllProfiles } = useProfile();
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -68,12 +69,12 @@ export default function WebringPage() {
         const allProfiles = await getAllProfiles();
         // setProfiles(allProfiles);
         // setFilteredProfiles(allProfiles);
-        setTotalFilteredCount(allProfiles.length);
-        setTotalDevelopers(allProfiles.length);
+        setTotalFilteredCount(allProfiles.result.length);
+        setTotalDevelopers(allProfiles.result.length);
 
         // Inicializar com os primeiros X perfis
         // setDisplayedProfiles(allProfiles.slice(0, itemsPerPage));
-        setHasMore(allProfiles.length > itemsPerPage);
+        setHasMore(allProfiles.result.length > itemsPerPage);
       } catch (error) {
         console.error("Erro ao buscar perfis:", error);
       } finally {
