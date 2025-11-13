@@ -13,13 +13,42 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Calendar } from "lucide-react";
+import { Menu, Calendar, MapPin, Globe2, Users2, Handshake } from "lucide-react";
+import { NavbarLink } from "./molecules/navbarlink";
 
 export default function Navbar() {
   const pathname = usePathname();
   const { user, logout, isAdmin } = useAuth();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+
+  const navlinks = [
+    {
+      label: "Made In Piauí",
+      href: "/made-in-piaui",
+      icon: <MapPin size={16} />,
+    },
+    {
+      label: "Webring",
+      href: "/webring",
+      icon: <Globe2 size={16} />,
+    },
+    {
+      label: "Comunidades",
+      href: "/communities",
+      icon: <Users2 size={16} />,
+    },
+    {
+      label: "Eventos",
+      href: "/eventos",
+      icon: <Calendar size={16} />,
+    },
+    {
+      label: "Contribuidores",
+      href: "/contribuidores",
+      icon: <Handshake size={16} />,
+    },
+  ];
 
   // Handle logout errors
   const handleLogout = async () => {
@@ -51,56 +80,14 @@ export default function Navbar() {
 
         <nav className="flex items-center gap-4">
           {/* Links públicos (sempre visíveis) */}
-          <Link
-            href="/made-in-piaui"
-            className={`text-sm ${
-              pathname === "/made-in-piaui"
-                ? "text-primary font-medium"
-                : "text-muted-foreground"
-            }`}
-          >
-            Made In Piauí
-          </Link>
-          <Link
-            href="/webring"
-            className={`text-sm ${
-              pathname === "/webring"
-                ? "text-primary font-medium"
-                : "text-muted-foreground"
-            }`}
-          >
-            Webring
-          </Link>
-          <Link
-            href="/communities"
-            className={`text-sm ${
-              pathname === "/communities"
-                ? "text-primary font-medium"
-                : "text-muted-foreground"
-            }`}
-          >
-            Comunidades
-          </Link>
-          <Link
-            href="/eventos"
-            className={`text-sm flex items-center gap-1 ${
-              pathname.startsWith("/eventos")
-                ? "text-primary font-medium"
-                : "text-muted-foreground"
-            }`}
-          >
-            <Calendar size={16} /> Eventos
-          </Link>
-          <Link
-            href="/contribuidores"
-            className={`text-sm ${
-              pathname === "/contribuidores"
-                ? "text-primary font-medium"
-                : "text-muted-foreground"
-            }`}
-          >
-            Contribuidores
-          </Link>
+          {navlinks.map((link) => {
+            return <NavbarLink
+            key={`nav-link-${link.href.split('/')}`}
+            label={link.label}
+            href={link.href}
+            icon={link.icon}
+            />
+          })}
 
           {/* Dropdown Menu */}
           <DropdownMenu>
